@@ -2,70 +2,13 @@
   <v-app>
     <div class="prizes-list">
       <v-container>
-        <v-row no-gutters>
-          <v-col cols="12" md="4">
+        <v-row no-gutter v-for="chunk in productChunks" v-bind:key="chunk">
+          <v-col cols="12" md="4" v-for="prize in chunk" v-bind:key="prize.name">
             <v-card class="custom-card" elevation="2" outlined>
-              <v-img height="250" src="@/assets/prize1.png"></v-img>
-              <div class="prize-title">Win a Flyaway</div>
+              <v-img height="250" v-bind:src="prize.image_url"></v-img>
+              <div class="prize-title">{{ prize.name }}</div>
               <div class="redeem-btn">
-                <v-btn rounded color="yellow">
-                  Redeem <v-icon class="rotate-180">mdi-chevron-up</v-icon>
-                </v-btn>
-              </div>
-            </v-card>
-          </v-col>
-          <v-col cols="12" md="4">
-            <v-card class="custom-card" elevation="2" outlined>
-              <v-img height="250" src="@/assets/prize2.png"></v-img>
-              <div class="prize-title">Win a Flyaway</div>
-              <div class="redeem-btn">
-                <v-btn rounded color="yellow">
-                  Redeem <v-icon class="rotate-180">mdi-chevron-up</v-icon>
-                </v-btn>
-              </div>
-            </v-card>
-          </v-col>
-          <v-col cols="12" md="4">
-            <v-card class="custom-card" elevation="2" outlined>
-              <v-img height="250" src="@/assets/prize3.png"></v-img>
-              <div class="prize-title">Win a Flyaway</div>
-              <div class="redeem-btn">
-                <v-btn rounded color="yellow">
-                  Redeem <v-icon class="rotate-180">mdi-chevron-up</v-icon>
-                </v-btn>
-              </div>
-            </v-card>
-          </v-col>
-        </v-row>
-        <v-row no-gutters>
-          <v-col cols="12" md="4">
-            <v-card class="custom-card" elevation="2" outlined>
-              <v-img height="250" src="https://res.cloudinary.com/dmoqfrr2i/image/upload/v1615724407/Demo%20App/prize4_tptogr.png"></v-img>
-              <div class="prize-title">Win a Flyaway</div>
-              <div class="redeem-btn">
-                <v-btn rounded color="yellow">
-                  Redeem <v-icon class="rotate-180">mdi-chevron-up</v-icon>
-                </v-btn>
-              </div>
-            </v-card>
-          </v-col>
-          <v-col cols="12" md="4">
-            <v-card class="custom-card" elevation="2" outlined>
-              <v-img height="250" src="@/assets/prize5.png"></v-img>
-              <div class="prize-title">Win a Flyaway</div>
-              <div class="redeem-btn">
-                <v-btn rounded color="yellow">
-                  Redeem <v-icon class="rotate-180">mdi-chevron-up</v-icon>
-                </v-btn>
-              </div>
-            </v-card>
-          </v-col>
-          <v-col cols="12" md="4">
-            <v-card class="custom-card" elevation="2" outlined>
-              <v-img height="250" src="@/assets/prize6.png"></v-img>
-              <div class="prize-title">Win a Flyaway</div>
-              <div class="redeem-btn">
-                <v-btn rounded color="yellow">
+                <v-btn class="redeem-btn-color" rounded>
                   Redeem <v-icon class="rotate-180">mdi-chevron-up</v-icon>
                 </v-btn>
               </div>
@@ -79,13 +22,34 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
+import axios from 'axios'
+import _ from 'lodash'
 
-@Component({
-  components: {
+interface PrizePojo {
+  name: string;
+  description: string;
+  image_url: string;
+  quantity: number;
+}
+
+@Component
+export default class PrizeList extends Vue {
+  prizes: PrizePojo[] = [];
+
+  async getAllPrizes (): Promise<PrizePojo[]> {
+    const ret = await axios.get('http://91ae04fa4521.ngrok.io/prize')
+    return ret.data
   }
-})
 
-export default class PrizeList extends Vue {}
+  async mounted () {
+    this.prizes = await this.getAllPrizes()
+    console.log('this.prizes', this.prizes)
+  }
+
+  get productChunks () {
+    return _.chunk(Object.values(this.prizes), 3)
+  }
+}
 </script>
 
 <style lang="less" scoped>
@@ -96,6 +60,11 @@ export default class PrizeList extends Vue {}
       border-radius: 24px !important;
       margin-right: 20px;
       margin-bottom: 20px;
+    }
+
+    .redeem-btn-color {
+      background-color: #FFCF0B;
+      padding: 20px 30px;
     }
 
     .rotate-180 {

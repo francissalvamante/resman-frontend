@@ -8,6 +8,9 @@
       <div>John Doe</div>
     </v-app-bar>
     <v-main style="background-color: #f3f3f3;">
+      <div class="banner">
+        <p class="banner-tag">Rewards</p>
+      </div>
       <router-view/>
     </v-main>
     <v-footer class="custom-footer">
@@ -32,6 +35,21 @@ export default Vue.extend({
 </script>
 
 <style scoped lang="less">
+  .banner {
+    width: 100vw;
+    height: 192px;
+    background-color: #0274BB;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .banner-tag{
+      font-size: 56.7px;
+      font-weight: bolder;
+      color: #fff;
+    }
+  }
+
   .top-header {
     display: flex;
   }
