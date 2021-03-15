@@ -1,7 +1,9 @@
 <template>
   <v-app style="background-color: #f3f3f3;">
     <v-app-bar app flat height="70px">
-      <img src="@/assets/logo2.png" height="50" />
+      <router-link :to="{ name: 'Home' }">
+        <img src="@/assets/logo2.png" height="50" />
+      </router-link>
       <v-toolbar-title class="custom-title">Francis Test</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-avatar class="custom-avatar" color="grey"><span class="white--text headline">JD</span></v-avatar>
