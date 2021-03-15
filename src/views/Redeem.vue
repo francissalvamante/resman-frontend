@@ -14,7 +14,7 @@
           <v-col md="4" offset-md="2">
             <v-img height="400" v-bind:src="prize[0].image_url"></v-img>
           </v-col>
-          <v-col md="4" style="margin-left: 10px;">
+          <v-col md="4" class="margin-response">
             <v-card elevation="2" outlined class="p-20">
               <h1 style="margin-bottom: 30px;">{{ prize[0].name }}</h1>
               <hr>
@@ -94,10 +94,10 @@
         </v-row>
         <v-row>
           <hr>
-          <v-col md="2" offset-md="2">
+          <v-col md="2" offset-md="2" offset-sm="1">
             <p class="description-title">Description</p>
           </v-col>
-          <v-col md="6">
+          <v-col md="6" class="margin-response">
             <p>{{ prize[0].description }}</p>
           </v-col>
         </v-row>
@@ -122,14 +122,14 @@ export default class Redeem extends Vue {
   loading = false;
 
   async getPrize (id: string): Promise<PrizePojo[]> {
-    const ret = await axios.get('http://ffea3880e8a5.ngrok.io/prize', { params: { _id: id } })
+    const ret = await axios.get('https://resman-backend.herokuapp.com/prize', { params: { _id: id } })
 
     return ret.data
   }
 
   async redeemPrize () {
     this.loading = true
-    const ret = await axios.post('http://ffea3880e8a5.ngrok.io/prize', { _id: this.id })
+    const ret = await axios.post('https://resman-backend.herokuapp.com/prize', { _id: this.id })
 
     this.loading = false
     if (ret.data.updated) {
@@ -222,5 +222,21 @@ export default class Redeem extends Vue {
 
   .bg-white {
     background-color: #fff;
+  }
+
+  .margin-response {
+    margin-left: 20px;
+  }
+
+  @media screen and (max-width: 600px) {
+    .margin-response {
+      margin-left: unset;
+    }
+  }
+
+  @media screen and (max-width: 960px) {
+    .margin-reponse {
+      margin-left: unset;
+    }
   }
 </style>

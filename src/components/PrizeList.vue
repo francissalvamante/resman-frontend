@@ -47,7 +47,7 @@ export default class PrizeList extends Vue {
   prizes: PrizePojo[] = [];
 
   async getAllPrizes (): Promise<PrizePojo[]> {
-    const ret = await axios.get('http://ffea3880e8a5.ngrok.io/prizes')
+    const ret = await axios.get('https://resman-backend.herokuapp.com/prizes')
     return ret.data
   }
 
