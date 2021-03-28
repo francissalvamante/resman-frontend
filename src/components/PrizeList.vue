@@ -1,24 +1,22 @@
 <template>
   <v-app>
-    <loading :show="prizes.length !== 0" />
+    <loading :show="prizes.length > 0" />
     <div class="prizes-list" v-if="prizes.length > 0">
-      <v-container>
-        <v-row no-gutter v-for="chunk in productChunks" v-bind:key="chunk">
-          <v-col cols="12" md="4" xs="12" sm="12" lg="4" xl="4" v-for="prize in chunk" v-bind:key="prize._id" v-spacer>
-            <v-card class="custom-card" elevation="2" outlined>
-              <v-img height="250" v-bind:src="prize.imageUrl"></v-img>
-              <div class="prize-title">{{ prize.name }}</div>
-              <div class="redeem-btn">
-                <router-link :to="{ name: 'Redeem', params: { id: prize._id } }" style="text-decoration: none; color: inherit;">
-                  <v-btn class="redeem-btn-color" rounded to="">
-                    Redeem <v-icon class="rotate-180">mdi-chevron-up</v-icon>
-                  </v-btn>
-                </router-link>
-              </div>
-            </v-card>
-          </v-col>
-        </v-row>
-      </v-container>
+      <div class="flex-container">
+        <div class="flex-content" v-for="prize in prizes" v-bind:key="prize._id">
+          <v-card class="custom-card" elevation="2" outlined>
+            <v-img height="250" v-bind:src="prize.imageUrl"></v-img>
+            <div class="prize-title">{{ prize.name }}</div>
+            <div class="redeem-btn">
+              <router-link :to="{ name: 'Redeem', params: { id: prize._id } }" style="text-decoration: none; color: inherit;">
+                <v-btn class="redeem-btn-color" rounded to="">
+                  Redeem <v-icon class="rotate-180">mdi-chevron-up</v-icon>
+                </v-btn>
+              </router-link>
+            </div>
+          </v-card>
+        </div>
+      </div>
     </div>
   </v-app>
 </template>
@@ -26,7 +24,6 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
 import axios from 'axios'
-import _ from 'lodash'
 import Loading from './Loading.vue'
 
 export interface PrizePojo {
@@ -51,10 +48,6 @@ export default class PrizeList extends Vue {
 
   async mounted () {
     this.prizes = await this.getAllPrizes()
-  }
-
-  get productChunks () {
-    return _.chunk(Object.values(this.prizes), 3)
   }
 }
 </script>
@@ -91,13 +84,37 @@ export default class PrizeList extends Vue {
     }
   }
 
-  .loading {
-    height: 350px;
-  }
-
-  .d-flex {
+  .flex-container {
+    display: -ms-flexbox;
+    display: -webkit-flex;
     display: flex;
-    align-items: center;
+    -webkit-flex-direction: row;
+    -ms-flex-direction: row;
+    flex-direction: row;
+    -webkit-flex-wrap: wrap;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+    -webkit-justify-content: center;
+    -ms-flex-pack: center;
     justify-content: center;
+    -webkit-align-content: center;
+    -ms-flex-line-pack: center;
+    align-content: center;
+    -webkit-align-items: flex-start;
+    -ms-flex-align: start;
+    align-items: flex-start;
+
+    .flex-content {
+      -webkit-order: 0;
+      -ms-flex-order: 0;
+      order: 0;
+      -webkit-flex: 0 1 auto;
+      -ms-flex: 0 1 auto;
+      flex: 0 1 auto;
+      -webkit-align-self: auto;
+      -ms-flex-item-align: auto;
+      align-self: auto;
+      margin: 10px;
+    }
   }
 </style>
