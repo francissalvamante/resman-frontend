@@ -1,88 +1,19 @@
 <template>
   <v-app>
-    <div class='d-flex loading' v-if="prize.length === 0">
-      <v-progress-circular
-        :size="70"
-        :width="7"
-        indeterminate
-        color="primary"></v-progress-circular>
-    </div>
-
-    <div class="d-flex mtop-30" v-if="prize.length > 0">
+    <loading :show="fetched" />
+    <div class="d-flex mtop-30" v-if="fetched">
       <v-container>
         <v-row no-gutters>
           <v-col md="4" offset-md="2">
-            <v-img height="400" v-bind:src="prize[0].image_url"></v-img>
+            <v-img height="400" v-bind:src="prize.imageUrl"></v-img>
           </v-col>
           <v-col md="4" class="margin-response">
             <v-card elevation="2" outlined class="p-20">
-              <h1 style="margin-bottom: 30px;">{{ prize[0].name }}</h1>
+              <h1 style="margin-bottom: 30px;">{{ prize.name }}</h1>
               <hr>
-              <div class="redeem-btn">
-                <v-dialog
-                  v-model="dialog"
-                  persistent
-                  width="500"
-                >
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-btn class="redeem-btn-color" rounded
-                      v-bind="attrs"
-                      v-on="on"
-                      :disabled="outOfStock || prize[0].quantity === 0"
-                    >
-                      Redeem <v-icon class="rotate-180">mdi-chevron-up</v-icon>
-                    </v-btn>
-                  </template>
-                  <v-card style="padding-bottom: 20px;" v-if="!redeemed && !loading">
-                    <v-card-title class="dialog-title">
-                      <h1 style="margin-right: 75px;">Are you sure?</h1>
-                      <span @click="dialog = !dialog" class="close-btn"><v-icon>mdi-close</v-icon></span>
-                    </v-card-title>
-                    <div class="d-flex">
-                      <v-avatar size="150" style="margin-top: 30px;">
-                        <img v-bind:src="prize[0].image_url" alt="">
-                      </v-avatar>
-                    </div>
-                    <div class="d-flex mtop-30">
-                      <p>Redeem for {{ prize[0].name }}?</p>
-                    </div>
-                    <v-card-actions class="just-content-center">
-                      <v-btn class="redeem-btn-color" rounded @click="redeemPrize()">Yes</v-btn>
-                      <v-btn class="cancel-btn" rounded @click="dialog = !dialog">Cancel</v-btn>
-                    </v-card-actions>
-                  </v-card>
-                  <v-card v-if="loading">
-                    <div class='d-flex loading'>
-                      <v-progress-circular
-                        :size="70"
-                        :width="7"
-                        indeterminate
-                        color="primary"></v-progress-circular>
-                    </div>
-                  </v-card>
-                  <v-card v-if="redeemed && !loading" style="padding-bottom: 20px;">
-                    <v-card-title class="dialog-title">
-                      <span @click="dialog = !dialog; redeemed = false;" class="close-btn"><v-icon>mdi-close</v-icon></span>
-                    </v-card-title>
-                    <div class="d-flex mbot-30">
-                      <h1>Congratulations!</h1>
-                    </div>
-                    <div class="d-flex">
-                      <p>You redeemed</p>
-                    </div>
-                    <div class="d-flex mbot-30" style="margin-top: -20px;">
-                      <p>{{ prize[0].name }}</p>
-                    </div>
-                    <v-card-actions class="just-content-center">
-                      <router-link :to="{ name: 'Home' }" style="text-decoration: none; color: inherit;">
-                        <v-btn class="redeem-btn-color" rounded @click="redeemed = !redeemed">More Prizes</v-btn>
-                      </router-link>
-                    </v-card-actions>
-                  </v-card>
-                </v-dialog>
-              </div>
+              <modal :data="prize" :outOfStock="outOfStock" :message="message" :id="id" @updateMessage="updateMessage($event)" @updateQuantity="updateQuantity($event)" />
               <hr>
-              <p style="margin-top: 20px;">{{ prize[0].quantity }} left in stock</p>
+              <p style="margin-top: 20px;">{{ prize.quantity }} left in stock</p>
               <p class="oos-error" v-if="outOfStock">{{ message }}</p>
             </v-card>
           </v-col>
@@ -98,7 +29,7 @@
             <p class="description-title">Description</p>
           </v-col>
           <v-col md="6" class="margin-response">
-            <p>{{ prize[0].description }}</p>
+            <p>{{ prize.description }}</p>
           </v-col>
         </v-row>
       </v-container>
@@ -110,37 +41,39 @@
 import { Component, Vue } from 'vue-property-decorator'
 import axios from 'axios'
 import { PrizePojo } from '../components/PrizeList.vue'
+import Modal from '../components/Modal.vue'
+import Loading from '../components/Loading.vue'
 
-@Component
+interface MessageEvent {
+  message: string;
+  outOfStock: boolean;
+}
+
+@Component({
+  components: {
+    Modal,
+    Loading
+  }
+})
 export default class Redeem extends Vue {
   id: string = this.$route.params.id
-  prize: PrizePojo[] = []
-  dialog = false
-  redeemed = false
+  prize: PrizePojo = { name: '', description: '', imageUrl: '', quantity: 0 }
+  fetched = false
   outOfStock = false
-  message = undefined
-  loading = false;
+  message = ''
 
-  async getPrize (id: string): Promise<PrizePojo[]> {
-    const ret = await axios.get('https://resman-backend.herokuapp.com/prize', { params: { _id: id } })
-
+  async getPrize (id: string): Promise<PrizePojo> {
+    const ret = await axios.get(process.env.VUE_APP_SERVER_URL + '/prize', { params: { _id: id } })
+    this.fetched = true
     return ret.data
   }
 
-  async redeemPrize () {
-    this.loading = true
-    const ret = await axios.post('https://resman-backend.herokuapp.com/prize', { _id: this.id })
-
-    this.loading = false
-    if (ret.data.updated) {
-      this.redeemed = true
-      this.prize[0].quantity = ret.data.doc.quantity
-    } else {
-      this.outOfStock = true
-      this.message = ret.data.message
-      this.dialog = false
-    }
+  updateMessage (event: MessageEvent) {
+    this.message = event.message
+    this.outOfStock = event.outOfStock
   }
+
+  updateQuantity (event: any) { this.prize.quantity = event }
 
   async created () {
     this.prize = await this.getPrize(this.id)
@@ -208,10 +141,6 @@ export default class Redeem extends Vue {
 
   .mbot-30 {
     margin-bottom: 30px;
-  }
-
-  .loading {
-    height: 350px;
   }
 
   .description-title {

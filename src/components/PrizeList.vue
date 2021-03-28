@@ -1,19 +1,12 @@
 <template>
   <v-app>
-    <div class='d-flex loading' v-if="prizes.length === 0">
-      <v-progress-circular
-        :size="70"
-        :width="7"
-        indeterminate
-        color="primary"></v-progress-circular>
-    </div>
-
+    <loading :show="prizes.length !== 0" />
     <div class="prizes-list" v-if="prizes.length > 0">
       <v-container>
         <v-row no-gutter v-for="chunk in productChunks" v-bind:key="chunk">
           <v-col cols="12" md="4" xs="12" sm="12" lg="4" xl="4" v-for="prize in chunk" v-bind:key="prize._id" v-spacer>
             <v-card class="custom-card" elevation="2" outlined>
-              <v-img height="250" v-bind:src="prize.image_url"></v-img>
+              <v-img height="250" v-bind:src="prize.imageUrl"></v-img>
               <div class="prize-title">{{ prize.name }}</div>
               <div class="redeem-btn">
                 <router-link :to="{ name: 'Redeem', params: { id: prize._id } }" style="text-decoration: none; color: inherit;">
@@ -34,20 +27,25 @@
 import { Component, Vue } from 'vue-property-decorator'
 import axios from 'axios'
 import _ from 'lodash'
+import Loading from './Loading.vue'
 
 export interface PrizePojo {
   name: string;
   description: string;
-  image_url: string;
+  imageUrl: string;
   quantity: number;
 }
 
-@Component
+@Component({
+  components: {
+    Loading
+  }
+})
 export default class PrizeList extends Vue {
   prizes: PrizePojo[] = [];
 
   async getAllPrizes (): Promise<PrizePojo[]> {
-    const ret = await axios.get('https://resman-backend.herokuapp.com/prizes')
+    const ret = await axios.get(process.env.VUE_APP_SERVER_URL + '/prizes')
     return ret.data
   }
 
