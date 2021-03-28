@@ -116,5 +116,13 @@ export default class PrizeList extends Vue {
       align-self: auto;
       margin: 10px;
     }
+
+    @media screen and (max-width: 768px) {
+      .flex-content {
+        width: 100%;
+        margin: unset;
+        padding: 15px
+      }
+    }
   }
 </style>
