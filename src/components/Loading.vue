@@ -1,5 +1,5 @@
 <template>
-  <div class='d-flex loading' v-if="!show">
+  <div class='d-flex loading' v-if="!show && !error">
     <v-progress-circular
       :size="70"
       :width="7"
@@ -14,6 +14,7 @@ import { Component, Vue, Prop } from 'vue-property-decorator'
 @Component
 export default class Loading extends Vue {
   @Prop() show: boolean | undefined
+  @Prop() error: boolean | undefined
 }
 </script>
 

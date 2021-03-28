@@ -1,6 +1,10 @@
 <template>
   <v-app>
-    <loading :show="fetched" />
+    <loading :show="fetched" :error="error" />
+    <error-component v-if="error" :returnToHome="true" @reloadPage="reloadPage" />
+    <v-snackbar v-model="showSnack" :timeout="2000" color="error">
+      Redemption failed
+    </v-snackbar>
     <div class="d-flex mtop-30" v-if="fetched">
       <v-container>
         <v-row no-gutters>
@@ -11,7 +15,7 @@
             <v-card elevation="2" outlined class="p-20">
               <h1 style="margin-bottom: 30px;">{{ prize.name }}</h1>
               <hr>
-              <modal :data="prize" :outOfStock="outOfStock" :message="message" :id="id" @updateMessage="updateMessage($event)" @updateQuantity="updateQuantity($event)" />
+              <modal :data="prize" :outOfStock="outOfStock" :message="message" :id="id" @updateMessage="updateMessage($event)" @updateQuantity="updateQuantity($event)" @updateError="updateError($event)" />
               <hr>
               <p style="margin-top: 20px;">{{ prize.quantity }} left in stock</p>
               <p class="oos-error" v-if="outOfStock">{{ message }}</p>
@@ -43,6 +47,7 @@ import axios from 'axios'
 import { PrizePojo } from '../components/PrizeList.vue'
 import Modal from '../components/Modal.vue'
 import Loading from '../components/Loading.vue'
+import ErrorComponent from '../components/Error.vue'
 
 interface MessageEvent {
   message: string;
@@ -52,7 +57,8 @@ interface MessageEvent {
 @Component({
   components: {
     Modal,
-    Loading
+    Loading,
+    ErrorComponent
   }
 })
 export default class Redeem extends Vue {
@@ -61,11 +67,17 @@ export default class Redeem extends Vue {
   fetched = false
   outOfStock = false
   message = ''
+  error = false
+  showSnack = false
 
   async getPrize (id: string): Promise<PrizePojo> {
-    const ret = await axios.get(process.env.VUE_APP_SERVER_URL + '/prize', { params: { _id: id } })
-    this.fetched = true
-    return ret.data
+    try {
+      const ret = await axios.get(process.env.VUE_APP_SERVER_URL + '/prize', { params: { _id: id } })
+      this.fetched = true
+      return ret.data
+    } catch (err) {
+      throw new Error('An unexpected error has occurred')
+    }
   }
 
   updateMessage (event: MessageEvent) {
@@ -75,8 +87,23 @@ export default class Redeem extends Vue {
 
   updateQuantity (event: any) { this.prize.quantity = event }
 
-  async created () {
-    this.prize = await this.getPrize(this.id)
+  updateError (event: any) {
+    this.showSnack = true
+  }
+
+  async reloadPage (event: any) { await this.updatePrize() }
+
+  async updatePrize () {
+    try {
+      this.error = false
+      this.prize = await this.getPrize(this.id)
+    } catch (err) {
+      this.error = true
+    }
+  }
+
+  async mounted () {
+    await this.updatePrize()
   }
 }
 </script>

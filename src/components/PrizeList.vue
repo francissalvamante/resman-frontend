@@ -1,7 +1,7 @@
 <template>
   <v-app>
-    <loading :show="prizes.length > 0" />
-    <div class="prizes-list" v-if="prizes.length > 0">
+    <loading :show="prizes.length > 0" :error="error" />
+    <div class="prizes-list" v-if="prizes.length > 0 && !error">
       <div class="flex-container">
         <div class="flex-content" v-for="prize in prizes" v-bind:key="prize._id">
           <v-card class="custom-card" elevation="2" outlined>
@@ -18,6 +18,7 @@
         </div>
       </div>
     </div>
+    <error-component v-if="error" @reloadPage="reloadPage($event)"/>
   </v-app>
 </template>
 
@@ -25,6 +26,7 @@
 import { Component, Vue } from 'vue-property-decorator'
 import axios from 'axios'
 import Loading from './Loading.vue'
+import ErrorComponent from './Error.vue'
 
 export interface PrizePojo {
   name: string;
@@ -35,19 +37,40 @@ export interface PrizePojo {
 
 @Component({
   components: {
-    Loading
+    Loading,
+    ErrorComponent
   }
 })
 export default class PrizeList extends Vue {
-  prizes: PrizePojo[] = [];
+  prizes: PrizePojo[] = []
+  error = false
 
   async getAllPrizes (): Promise<PrizePojo[]> {
-    const ret = await axios.get(process.env.VUE_APP_SERVER_URL + '/prizes')
-    return ret.data
+    try {
+      const ret = await axios.get(process.env.VUE_APP_SERVER_URL + '/prizes')
+      return ret.data
+    } catch (err) {
+      throw new Error('An unexpected error has occured')
+    }
+  }
+
+  async reloadPage (event: any) {
+    try {
+      this.error = false
+      this.prizes = await this.getAllPrizes()
+    } catch (error) {
+      this.prizes = []
+      this.error = true
+    }
   }
 
   async mounted () {
-    this.prizes = await this.getAllPrizes()
+    try {
+      this.prizes = await this.getAllPrizes()
+    } catch (err) {
+      this.prizes = []
+      this.error = true
+    }
   }
 }
 </script>

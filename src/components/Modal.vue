@@ -79,15 +79,21 @@ export default class Modal extends Vue {
   redeemed = false
 
   async redeemPrize () {
-    this.loading = true
-    const ret = await axios.post(process.env.VUE_APP_SERVER_URL + '/prize', { _id: this.id })
+    try {
+      this.loading = true
+      const ret = await axios.post(process.env.VUE_APP_SERVER_URL + '/prize', { _id: this.id })
 
-    this.loading = false
-    if (ret.data.updated) {
-      this.redeemed = true
-      this.$emit('updateQuantity', ret.data.doc.quantity)
-    } else {
-      this.$emit('updateMessage', { message: ret.data.message, outOfStock: true })
+      this.loading = false
+      if (ret.data.updated) {
+        this.redeemed = true
+        this.$emit('updateQuantity', ret.data.doc.quantity)
+      } else {
+        this.$emit('updateMessage', { message: ret.data.message, outOfStock: true })
+        this.dialog = false
+      }
+    } catch (err) {
+      this.loading = false
+      this.$emit('updateError', false)
       this.dialog = false
     }
   }
