@@ -95,6 +95,12 @@ export default class Register extends Vue {
       width: 25%;
     }
 
+    @media screen and (max-width: 768px) {
+      .register-card {
+        width: 85%;
+      }
+    }
+
     .action-container {
       margin-top: 10px;
       width: 100%;
